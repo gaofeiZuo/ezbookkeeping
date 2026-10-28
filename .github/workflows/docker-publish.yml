@@ -32,6 +32,10 @@ jobs:
           context: .
           platforms: linux/amd64        # 服务器是 amd64，云端直接出 amd64 镜像
           push: true
+          # 构建镜像时跳过单元测试（.* 匹配所有测试名 = 全部跳过）
+          # 原因：构建“可部署镜像”不需要跑测试；作者部分测试对时间/第三方数据敏感，CI 环境易挂
+          build-args: |
+            SKIP_TESTS=.*
           tags: |
             gaofei211/bookkeeping:latest
             gaofei211/bookkeeping:${{ github.sha }}
