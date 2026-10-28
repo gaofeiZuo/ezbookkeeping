@@ -1,0 +1,37 @@
+name: Build and Push Docker Image
+
+# 触发条件：push 到 main 分支时自动跑；也可在 Actions 页面手动点运行
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest   # GitHub 提供的 amd64 云端机器
+    steps:
+      # ① 拉取本仓库代码到这台云端机器
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ② 准备 Buildx（Docker 官方构建器）
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ③ 登录 Docker Hub（账号/密码从 GitHub Secrets 读取，不写死在文件里）
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # ④ 构建镜像并推送到你的 Docker Hub
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64        # 服务器是 amd64，云端直接出 amd64 镜像
+          push: true
+          tags: |
+            gaofei211/bookkeeping:latest
+            gaofei211/bookkeeping:${{ github.sha }}
